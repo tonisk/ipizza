@@ -12,8 +12,8 @@ module Ipizza
       '4012' => %w(VK_SERVICE VK_VERSION VK_SND_ID VK_REC_ID VK_NONCE VK_RETURN VK_DATETIME VK_RID)
     }
 
-    def sign(privkey_path, privkey_secret, order, mac_param = 'VK_MAC')
-      signature = Ipizza::Util.sign(privkey_path, privkey_secret, Ipizza::Util.mac_data_string(sign_params, order))
+    def sign(privkey_path, privkey_secret, order, mac_param = 'VK_MAC', hash_algorithm)
+      signature = Ipizza::Util.sign(privkey_path, privkey_secret, Ipizza::Util.mac_data_string(sign_params, order), hash_algorithm)
       self.sign_params[mac_param] = signature
     end
 

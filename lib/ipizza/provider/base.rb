@@ -2,6 +2,7 @@ module Ipizza::Provider
   class Base
 
     SUPPORTED_ENCODINGS = %w(UTF-8 ISO-8859-1 WINDOWS-1257)
+    DEFAULT_SIGNATURE_VERSION = "008"
 
     class << self
       attr_accessor :service_url,
@@ -12,6 +13,7 @@ module Ipizza::Provider
                     :file_cert,
                     :sign_algorithm,
                     :verification_algorithm,
+                    :signature_version,
                     :snd_id,
                     :rec_id,
                     :rec_acc,
@@ -25,7 +27,7 @@ module Ipizza::Provider
       req.service_url = self.class.service_url
       req.sign_params = {
         'VK_SERVICE' => service_no,
-        'VK_VERSION' => '008',
+        'VK_VERSION' => self.class.signature_version || DEFAULT_SIGNATURE_VERSION,
         'VK_SND_ID' => self.class.snd_id,
         'VK_STAMP' => payment.stamp,
         'VK_AMOUNT' => sprintf('%.2f', payment.amount),
@@ -47,7 +49,12 @@ module Ipizza::Provider
         'VK_LANG' => self.class.lang
       }
 
-      req.sign(self.class.file_key, self.class.key_secret, Ipizza::Request::PARAM_ORDER[service_no.to_s])
+      req.sign(
+        self.class.file_key,
+        self.class.key_secret,
+        Ipizza::Request::PARAM_ORDER[service_no.to_s],
+        self.class.sign_algorithm || Ipizza::Util::DEFAULT_HASH_ALGORITHM
+      )
       req
     end
 
@@ -55,7 +62,7 @@ module Ipizza::Provider
       response = Ipizza::PaymentResponse.new(params)
       response.verify(
         self.class.file_cert,
-        self.class.verification_algorithm || Ipizza::Util::DEFAULT_HASH_ALGORITHM
+        self.class.verification_algorithm || Ipizza::Util::DEFAULT_VERIFICATION_ALGORITHM
       )
       response
     end
@@ -65,7 +72,7 @@ module Ipizza::Provider
       req.service_url = self.class.service_url
       req.sign_params = {
         'VK_SERVICE' => service_no,
-        'VK_VERSION' => '008',
+        'VK_VERSION' => self.class.signature_version || DEFAULT_SIGNATURE_VERSION,
         'VK_SND_ID' => self.class.snd_id,
         'VK_RETURN' => self.class.return_url,
         'VK_DATETIME' => Ipizza::Util.time_to_iso8601(Time.now),
@@ -87,7 +94,12 @@ module Ipizza::Provider
         'VK_LANG' => self.class.lang
       }
 
-      req.sign(self.class.file_key, self.class.key_secret, Ipizza::Request::PARAM_ORDER[service_no.to_s])
+      req.sign(
+        self.class.file_key,
+        self.class.key_secret,
+        Ipizza::Request::PARAM_ORDER[service_no.to_s],
+        self.class.sign_algorithm || Ipizza::Util::DEFAULT_HASH_ALGORITHM
+      )
       req
     end
 
@@ -95,7 +107,7 @@ module Ipizza::Provider
       response = Ipizza::AuthenticationResponse.new(params)
       response.verify(
         self.class.file_cert,
-        self.class.verification_algorithm || Ipizza::Util::DEFAULT_HASH_ALGORITHM
+        self.class.verification_algorithm || Ipizza::Util::DEFAULT_VERIFICATION_ALGORITHM
       )
       response
     end

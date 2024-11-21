@@ -5,10 +5,11 @@ module Ipizza
   class Util
 
     DEFAULT_HASH_ALGORITHM = 'sha1'
+    DEFAULT_VERIFICATION_ALGORITHM = 'sha1'
 
     class << self
 
-      def verify_signature(certificate_path, signature, data, hash_algorithm = DEFAULT_HASH_ALGORITHM)
+      def verify_signature(certificate_path, signature, data, hash_algorithm = DEFAULT_VERIFICATION_ALGORITHM)
         if !certificate_path.to_s.empty? && !signature.to_s.empty? && File.file?(certificate_path)
           certificate = OpenSSL::X509::Certificate.new(File.read(certificate_path).gsub(/  /, '')).public_key
           certificate.verify(
